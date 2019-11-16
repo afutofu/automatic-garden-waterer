@@ -1,19 +1,24 @@
 #include <virtuabotixRTC.h>
 
-virtuabotixRTC myRTC(6,7,8);
+virtuabotixRTC myRTC(2,3,4);
 
-int outPin = 13;
+// Vars for clock
 int currentMin;
 bool firstRun = true;
+
+// Vars for moisture sensor
+int moistIn = A0;
+float moisture;
+
 
 void setup() {
   Serial.begin(9600);
 
-  // Will output to pin 13 if minute has changed
-  pinMode(outPin, OUTPUT);
+  // Will check input from moisture sensor
+  pinMode(moistIn, INPUT);
 
   // seconds, mins, hours, day of week, day of month, month, year
-//  myRTC.setDS1302Time(20, 8, 10, 6, 16, 11, 2019);
+//  myRTC.setDS1302Time(0, 32, 10, 6, 16, 11, 2019);
 }
 
 void loop() {
@@ -38,22 +43,24 @@ void loop() {
   Serial.println(myRTC.seconds);
 
   if (myRTC.minutes != currentMin){
-    Serial.print("Current minute from ");
+    Serial.print("\nCurrent minute from ");
     Serial.print(currentMin);
     
     Serial.print(" to ");
     currentMin = myRTC.minutes;
     Serial.println(currentMin);
 
-    digitalWrite(outPin, HIGH);
+    moisture = analogRead(moistIn);
+
+    Serial.print("Current moisture is: ");
+    Serial.println(moisture);
+    Serial.println();
 
     if (firstRun == false){
       delay(10000);
     }
 
     firstRun = false;
-  }else{
-    digitalWrite(outPin, LOW);
   }
   
   // Delay for 1 second so the program doesn't print non-stop
