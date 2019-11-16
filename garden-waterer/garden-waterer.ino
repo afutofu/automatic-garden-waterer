@@ -10,12 +10,17 @@ bool firstRun = true;
 int moistIn = A0;
 float moisture;
 
+// Vars for relay
+int relayPin = 12;
 
 void setup() {
   Serial.begin(9600);
 
   // Will check input from moisture sensor
   pinMode(moistIn, INPUT);
+
+  // Will close relay if moisture is low
+  pinMode(relayPin, OUTPUT);
 
   // seconds, mins, hours, day of week, day of month, month, year
 //  myRTC.setDS1302Time(0, 32, 10, 6, 16, 11, 2019);
@@ -56,10 +61,13 @@ void loop() {
     Serial.println(moisture);
     Serial.println();
 
-    if (firstRun == false){
-      delay(10000);
+
+    if (moisture >= 550 && firstRun == false){
+      digitalWrite(relayPin, HIGH);
+      delay(5000);
     }
 
+    digitalWrite(relayPin, LOW);
     firstRun = false;
   }
   
