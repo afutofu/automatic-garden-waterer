@@ -4,6 +4,7 @@ virtuabotixRTC myRTC(2,3,4);
 
 // Vars for clock
 int currentMin;
+int minDiff = 0;
 bool firstRun = true;
 
 // Vars for moisture sensor
@@ -23,7 +24,7 @@ void setup() {
   pinMode(relayPin, OUTPUT);
 
   // seconds, mins, hours, day of week, day of month, month, year
-//  myRTC.setDS1302Time(0, 32, 10, 6, 16, 11, 2019);
+  myRTC.setDS1302Time(50, 11, 11, 7, 17, 11, 2019);
 }
 
 void loop() {
@@ -61,10 +62,15 @@ void loop() {
     Serial.println(moisture);
     Serial.println();
 
+    if (firstRun == false){
+      minDiff += 1;
+    }
 
-    if (moisture >= 550 && firstRun == false){
+
+    if (moisture >= 550 && firstRun == false && minDiff > 1){
       digitalWrite(relayPin, HIGH);
       delay(5000);
+      minDiff = 0;
     }
 
     digitalWrite(relayPin, LOW);
