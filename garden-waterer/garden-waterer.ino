@@ -3,13 +3,14 @@
 virtuabotixRTC myRTC(2,3,4);
 
 // Vars for clock
-int currentMin;
-int minDiff = 0;
+int currentDay;
+int dayDiff = 0;
 bool firstRun = true;
 
 // Vars for moisture sensor
 int moistIn = A0;
 float moisture;
+float moistureThreshold = 500;
 
 // Vars for relay
 int relayPin = 12;
@@ -24,12 +25,26 @@ void setup() {
   pinMode(relayPin, OUTPUT);
 
   // seconds, mins, hours, day of week, day of month, month, year
-  myRTC.setDS1302Time(50, 11, 11, 7, 17, 11, 2019);
+//  myRTC.setDS1302Time(50, 11, 11, 7, 17, 11, 2019);
+
+  for( int i = 0; i < 5; i++){
+    Serial.print(i);
+    delay(250);
+    Serial.print(".");
+    delay(250);
+    Serial.print(".");
+    delay(250);
+    Serial.print(".");
+    delay(250);
+  }
+
+  Serial.println();
+  
 }
 
 void loop() {
   // Before updating, store the current minute to check if minute has changed
-  currentMin = myRTC.minutes;
+  currentDay = myRTC.dayofmonth;
 
   // Update clock module to real time
   myRTC.updateTime();
@@ -48,13 +63,13 @@ void loop() {
   Serial.print(":");
   Serial.println(myRTC.seconds);
 
-  if (myRTC.minutes != currentMin){
-    Serial.print("\nCurrent minute from ");
-    Serial.print(currentMin);
+  if (myRTC.dayofmonth != currentDay){
+    Serial.print("\nCurrent day from ");
+    Serial.print(currentDay);
     
     Serial.print(" to ");
-    currentMin = myRTC.minutes;
-    Serial.println(currentMin);
+    currentDay = myRTC.dayofmonth;
+    Serial.println(currentDay);
 
     moisture = analogRead(moistIn);
 
@@ -62,15 +77,21 @@ void loop() {
     Serial.println(moisture);
     Serial.println();
 
+    if(firstRun && moisture >= moistureThreshold) {
+      digitalWrite(relayPin, HIGH);
+      delay(5000);
+      dayDiff = 0;
+    }
+
     if (firstRun == false){
-      minDiff += 1;
+      dayDiff += 1;
     }
 
 
-    if (moisture >= 550 && firstRun == false && minDiff > 1){
+    if (moisture >= moistureThreshold && firstRun == false && dayDiff > 1){
       digitalWrite(relayPin, HIGH);
       delay(5000);
-      minDiff = 0;
+      dayDiff = 0;
     }
 
     digitalWrite(relayPin, LOW);
