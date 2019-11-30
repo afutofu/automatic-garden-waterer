@@ -10,10 +10,12 @@ bool firstRun = true;
 // Vars for moisture sensor
 int moistIn = A0;
 float moisture;
-float moistureThreshold = 500;
+float moistureThreshold = 430;
 
 // Vars for relay
 int relayPin = 12;
+int dlayMinutes = 1;
+int dlay = dlayMinutes* 30 * 1000;
 
 void setup() {
   Serial.begin(9600);
@@ -25,9 +27,9 @@ void setup() {
   pinMode(relayPin, OUTPUT);
 
   // seconds, mins, hours, day of week, day of month, month, year
-//  myRTC.setDS1302Time(50, 11, 11, 7, 17, 11, 2019);
+//  myRTC.setDS1302Time(1, 29, 8, 6, 23, 11, 2019);
 
-  for( int i = 0; i < 5; i++){
+  for( int i = 20; i > 0; i--){
     Serial.print(i);
     delay(250);
     Serial.print(".");
@@ -38,12 +40,12 @@ void setup() {
     delay(250);
   }
 
-  Serial.println();
+  Serial.println(" Program is now starting");
   
 }
 
 void loop() {
-  // Before updating, store the current minute to check if minute has changed
+  // Before updating, store the current day to check if day has changed
   currentDay = myRTC.dayofmonth;
 
   // Update clock module to real time
@@ -63,6 +65,14 @@ void loop() {
   Serial.print(":");
   Serial.println(myRTC.seconds);
 
+  // Print current moisture level to serial monitor
+  moisture = analogRead(moistIn);
+  Serial.print("Current moisture is: ");
+  Serial.println(moisture);
+  Serial.println();
+
+
+  // Check if the day has changed
   if (myRTC.dayofmonth != currentDay){
     Serial.print("\nCurrent day from ");
     Serial.print(currentDay);
@@ -71,15 +81,10 @@ void loop() {
     currentDay = myRTC.dayofmonth;
     Serial.println(currentDay);
 
-    moisture = analogRead(moistIn);
-
-    Serial.print("Current moisture is: ");
-    Serial.println(moisture);
-    Serial.println();
-
+    // Will check moisture on first run and turn on relay if moisture is above threshold
     if(firstRun && moisture >= moistureThreshold) {
       digitalWrite(relayPin, HIGH);
-      delay(5000);
+      delay(dlay);
       dayDiff = 0;
     }
 
@@ -87,10 +92,10 @@ void loop() {
       dayDiff += 1;
     }
 
-
+    // Will check after 2 days and turn on if moisture is above threshold. If moisture is below threshold, then check again the following days
     if (moisture >= moistureThreshold && firstRun == false && dayDiff > 1){
       digitalWrite(relayPin, HIGH);
-      delay(5000);
+      delay(dlay);
       dayDiff = 0;
     }
 
